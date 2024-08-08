@@ -13,7 +13,7 @@ public class Main {
                 {0, 0, 0}
         };
 
-        int winner = 0; // 0 = null | 1 = X | 2 = O
+        int winner = 0; // 0 = null | 1 = X | 2 = O | 3 = Draw
         int current_player = 1; // 1 = X | 2 = O
 
         System.out.println("Welcome to tic tac toe.");
@@ -27,8 +27,19 @@ public class Main {
             PrintBoard(board);
             String answer = scanner.next();
 
+            if (answer.length() != 2) {
+                System.out.println("Please enter a valid coordinate\n");
+                continue;
+            }
+
             // Indexes the position determined by the user's answer
-            int current_index = board[answer.charAt(0) - '0' - 1][answer.charAt(1) - '0' - 1];
+            int current_index;
+            try {
+                current_index = board[answer.charAt(0) - '0' - 1][answer.charAt(1) - '0' - 1];
+            } catch (Exception ArrayIndexOutOfBoundsException) {
+                System.out.println("Please enter a valid coordinate\n");
+                continue;
+            }
 
             if (current_index == 0) {
                 board[(int) answer.charAt(0) - '0' - 1][(int) answer.charAt(1) - '0' - 1] = current_player;
@@ -37,16 +48,25 @@ public class Main {
                 continue;
             }
 
-            winner = CheckBoard(board, current_player);
+            winner = CheckForDraw(board);
+            if (winner != 0) {
+                break;
+            }
+            winner = CheckBoard(board, current_player); // Checks for winner
             current_player = (current_player == 1) ? 2 : 1; // Switch player's turn
 
         }
 
         PrintBoard(board);
-        System.out.println("Player " + winner + " Wins!");
+        if (winner != 4) { // If not draw, print winner
+            System.out.println("Player " + winner + " Wins!");
+        } else {
+            System.out.println("Draw!");
+        }
 
     }
 
+    // Prints the entire board
     public static void PrintBoard(int[][] board) {
 
         char empty_space = '-';
@@ -66,8 +86,8 @@ public class Main {
 
     }
 
+    // Checks for possible win cases on the board
     public static int CheckBoard(int[][] board, int current_player) {
-        boolean won = false;
         int[] win_case_x = {1,1,1};
         int[] win_case_o = {2,2,2};
 
@@ -76,14 +96,11 @@ public class Main {
 
         // Case 1 - Matching Row
         for (int[] i: board) {
-            if (won) {
-                break;
-            }
-
             boolean x_wins = Arrays.toString(i).equals(Arrays.toString(win_case_x));
             boolean o_wins = Arrays.toString(i).equals(Arrays.toString(win_case_o));
-
-            won = x_wins || o_wins;
+            if (x_wins || o_wins) {
+                return  current_player;
+            }
         }
 
         // Case 2 - Matching Column
@@ -96,14 +113,12 @@ public class Main {
         }
 
         for (int[] i: vertical_board) {
-            if (won) {
-                break;
-            }
-
             boolean x_wins = Arrays.toString(i).equals(Arrays.toString(win_case_x));
             boolean o_wins = Arrays.toString(i).equals(Arrays.toString(win_case_o));
 
-            won = x_wins || o_wins;
+            if (x_wins || o_wins) {
+                return  current_player;
+            }
         }
 
         // Case 3 - Matching Diagonal
@@ -112,11 +127,22 @@ public class Main {
         boolean x_wins = Arrays.toString(transformation1).equals(Arrays.toString(win_case_x)) || Arrays.toString(transformation2).equals(Arrays.toString(win_case_x));
         boolean o_wins = Arrays.toString(transformation2).equals(Arrays.toString(win_case_o)) || Arrays.toString(transformation1).equals(Arrays.toString(win_case_o));
 
-        if (!won && (x_wins || o_wins)) {
-            won = true;
+        return (x_wins || o_wins) ? current_player : 0;
+    }
+
+    // Checks if board is fully occupied
+    public static int CheckForDraw(int[][] board) {
+        for (int[] x: board) {
+            for (int y: x) {
+
+                if (y == 0) {
+                    return 0; // If 0 is found, winner value stays at 0
+                }
+
+            }
         }
 
-        return (won) ? current_player: 0;
+        return 4; // If no 0's are found, winner value is set to 4 (draw ending)
     }
 
 }
